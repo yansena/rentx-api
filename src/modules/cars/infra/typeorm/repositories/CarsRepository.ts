@@ -1,4 +1,4 @@
-import { getRepository, Repository, MoreThan, LessThan, MoreThanOrEqual } from "typeorm";
+ import { getRepository, Repository, MoreThan, LessThan, MoreThanOrEqual } from "typeorm";
 import { ICarsRepository } from "../../../repositories/ICarsRepository";
 import { Car } from "../entities/Car";
 
@@ -20,10 +20,12 @@ class CarsRepository implements ICarsRepository {
   }
 
   async listByCreated(lastPulledVersion: number): Promise<Car[]> {
-    const cars = await this.repository.find({
-      created_at: MoreThan(lastPulledVersion)      
-    });
-
+    const cars = await this.repository
+    .createQueryBuilder()
+    .where("created_at >= :lastPulledVersion AND updated_at <> created_at",
+    { lastPulledVersion })
+    .getMany();     
+    
     return cars;
   }
 
